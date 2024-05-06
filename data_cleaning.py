@@ -1,8 +1,8 @@
 import pandas as pd
-import phonenumbers
-from phonenumbers import is_valid_number, parse
 import pycountry
 import re
+from validate_email import validate_email
+
 class DataCleaning:
     """
     A class for cleaning data from various sources.
@@ -43,6 +43,7 @@ class DataCleaning:
             pandas.DataFrame: The cleaned user data DataFrame.
         """
 
+
         # Convert date_of_birth column to datetime format
         df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], infer_datetime_format=True,errors='coerce')
 
@@ -62,5 +63,26 @@ class DataCleaning:
 
         # Dropping rows with invalid phone number
         df = df.dropna(subset=['phone_number'])
+
+        # validating emails 
+        # df1 = df[(df['euro'] > 100) & df['email'].apply(validate_email)]
+        # print (df1)
+
+        # validating email_address and converting it object type to string
+        df['email_address'] = df['email_address'].apply(lambda x: x if validate_email(x) else None)
+        df = df.dropna(subset=['email_address'])
+        df['email_address'] = df['email_address'].astype('string')
+
+        # Validating first and last name, and converting it to string.
+
+        df['first_name'] = df['first_name'].apply(lambda x: x if re.match(r'^[a-zA-Z\s-]+$', str(x)) else None)
+        df['first_name'] = df['first_name'].astype('string')
+        df = df.dropna(subset=['first_name'])
+
+        df['last_name'] = df['last_name'].apply(lambda x : x if re.match(r'^[a-zA-Z\s-]+$', str(x)) else None)
+        df['last_name'] = df['last_name'].astype('string')
+        df = df.dropna(subset=['last_name'])
+
+
 
         return df  # Return the cleaned user data DataFrame
