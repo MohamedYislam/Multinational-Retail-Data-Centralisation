@@ -17,7 +17,7 @@ print(user_data.head(100), "<user_data.head(100)")
 cleaned_df = data_cleaner.clean_user_data(user_data)
 print(cleaned_df, "<cleaned_df")
 print(cleaned_df.info(), "cleaned_df.info()")
-
+print(user_data.loc[:, ['address', 'company', 'email_address']], "<user_data.loc[...]")
 
 # for table in table_names:
 #     user_data = data_extractor.read_rds_table(db_connector, table)

@@ -57,6 +57,9 @@ class DataCleaning:
         # Convert date_of_birth column to datetime format and removing rows with invalid dates
         df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], infer_datetime_format=True,errors='coerce')
         df = df.dropna(subset=['date_of_birth'])
+
+        # Converting company name column from object data type to string
+        df['company'] = df['company'].astype('string')
         
         # Validating country code
         df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
