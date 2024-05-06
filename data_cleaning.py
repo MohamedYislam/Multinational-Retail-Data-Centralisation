@@ -43,11 +43,19 @@ class DataCleaning:
             pandas.DataFrame: The cleaned user data DataFrame.
         """
 
+        # Validating first and last name, and converting column type from ojbect to string.
 
-        # Convert date_of_birth column to datetime format
+        df['first_name'] = df['first_name'].apply(lambda x: x if re.match(r'^[a-zA-Z\s-]+$', str(x)) else None)
+        df['first_name'] = df['first_name'].astype('string')
+        df = df.dropna(subset=['first_name'])
+
+        df['last_name'] = df['last_name'].apply(lambda x : x if re.match(r'^[a-zA-Z\s-]+$', str(x)) else None)
+        df['last_name'] = df['last_name'].astype('string')
+        df = df.dropna(subset=['last_name'])
+
+
+        # Convert date_of_birth column to datetime format and removing rows with invalid dates
         df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], infer_datetime_format=True,errors='coerce')
-
-        # Drop rows with remaining invalid dates
         df = df.dropna(subset=['date_of_birth'])
         
         # Validating country code
@@ -64,24 +72,16 @@ class DataCleaning:
         # Dropping rows with invalid phone number
         df = df.dropna(subset=['phone_number'])
 
-        # validating emails 
-        # df1 = df[(df['euro'] > 100) & df['email'].apply(validate_email)]
-        # print (df1)
+
 
         # validating email_address and converting it object type to string
         df['email_address'] = df['email_address'].apply(lambda x: x if validate_email(x) else None)
         df = df.dropna(subset=['email_address'])
         df['email_address'] = df['email_address'].astype('string')
 
-        # Validating first and last name, and converting it to string.
-
-        df['first_name'] = df['first_name'].apply(lambda x: x if re.match(r'^[a-zA-Z\s-]+$', str(x)) else None)
-        df['first_name'] = df['first_name'].astype('string')
-        df = df.dropna(subset=['first_name'])
-
-        df['last_name'] = df['last_name'].apply(lambda x : x if re.match(r'^[a-zA-Z\s-]+$', str(x)) else None)
-        df['last_name'] = df['last_name'].astype('string')
-        df = df.dropna(subset=['last_name'])
+        # Convert join_date  column to datetime format and removing rows with invalid dates
+        df['join_date'] = pd.to_datetime(df['join_date'], infer_datetime_format=True,errors='coerce')
+        df = df.dropna(subset=['join_date'])
 
 
 
