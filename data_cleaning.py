@@ -61,6 +61,21 @@ class DataCleaning:
         # Converting company name column from object data type to string
         df['company'] = df['company'].astype('string')
         
+        # Validating email_address and converting it object type to string
+        df['email_address'] = df['email_address'].apply(lambda x: x if validate_email(x) else None)
+        df = df.dropna(subset=['email_address'])
+        df['email_address'] = df['email_address'].astype('string')
+
+        # Converting address column name from object data type to string
+        df['address'] = df['address'].astype('string')
+
+        # Validating country name entry and converting column  to string data type
+        df['country'] = df['country'].apply(lambda x: x if pycountry.countries.lookup(x)
+                                            or pycountry.countries.get(alpha_2=x.country)
+                                            or pycountry.countries.get(alpha_3=x.country) else None)
+        df['country'] = df['country'].astype('string')
+
+
         # Validating country code
         df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
         
@@ -75,12 +90,6 @@ class DataCleaning:
         # Dropping rows with invalid phone number
         df = df.dropna(subset=['phone_number'])
 
-
-
-        # validating email_address and converting it object type to string
-        df['email_address'] = df['email_address'].apply(lambda x: x if validate_email(x) else None)
-        df = df.dropna(subset=['email_address'])
-        df['email_address'] = df['email_address'].astype('string')
 
         # Convert join_date  column to datetime format and removing rows with invalid dates
         df['join_date'] = pd.to_datetime(df['join_date'], infer_datetime_format=True,errors='coerce')

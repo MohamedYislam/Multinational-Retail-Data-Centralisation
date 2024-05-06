@@ -2,6 +2,7 @@ from data_extraction import DataExtractor
 from database_utils import DatabaseConnector
 from data_cleaning import DataCleaning
 import pandas as pd
+import pycountry
 
 
 data_extractor = DataExtractor()
@@ -17,8 +18,10 @@ print(user_data.head(100), "<user_data.head(100)")
 cleaned_df = data_cleaner.clean_user_data(user_data)
 print(cleaned_df, "<cleaned_df")
 print(cleaned_df.info(), "cleaned_df.info()")
-print(user_data.loc[:, ['address', 'company', 'email_address']], "<user_data.loc[...]")
-
+# # print(user_data.loc[:, ['country']], "<user_data.loc[...]")
+# print(user_data['country'].head(100), "< user_data['country].head(100)")
+# print(pycountry.countries.lookup('United Kingdom'), "<pycountry lookup")
+# print(pycountry.countries.get(alpha_2 ='GB'), "<<get here")
 # for table in table_names:
 #     user_data = data_extractor.read_rds_table(db_connector, table)
 #     print(table, "<table")
