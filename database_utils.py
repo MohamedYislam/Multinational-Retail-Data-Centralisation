@@ -1,5 +1,6 @@
 import yaml  
 from sqlalchemy import create_engine, inspect
+from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError
 
 class DatabaseConnector:
     """
@@ -25,32 +26,33 @@ class DatabaseConnector:
         return creds  # Return the dictionary containing the database credentials
 
     # Task 3 step 3
-    def init_db_engine(self):  # Define a method to initialize the database engine
+    def init_db_engine(self,yaml_file):  # Define a method to initialize the database engine
         """
         Initialize the database engine using the database credentials.
 
         Returns:
             sqlalchemy.engine.Engine: The initialized database engine.
         """
-        creds = self.read_db_creds('db_creds.yaml')  # Read the database credentials from the YAML file
+        creds = self.read_db_creds(yaml_file)  # Read the database credentials from the YAML file
         engine = create_engine(f"postgresql://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")  # Create the database engine using the credentials
+
         return engine  # Return the initialized database engine
 
     # Task 3 step 4
-    def list_db_tables(self):
+    def list_db_tables(self, yaml_file):
         """
         List all tables in the database.
 
         Returns:
             list: A list of table names in the database.
         """
-        engine = self.init_db_engine()  # Use the init_db_engine method to get the engine instance
+        engine = self.init_db_engine(yaml_file)  # Use the init_db_engine method to get the engine instance
         inspector = inspect(engine)  # Create an inspector object from the engine
         table_names = inspector.get_table_names()  # Get a list of table names
         return table_names
 
     # Task 3 step 7
-    def upload_to_db(self, df, table_name):  # Define a method to upload a DataFrame to a specified table in the database (Task 3, Step 7)
+    def upload_to_db(self, df, yaml_file, table_name):  # Define a method to upload a DataFrame to a specified table in the database (Task 3, Step 7)
         """
         Upload a DataFrame to a specified table in the database.
 
@@ -58,5 +60,32 @@ class DatabaseConnector:
             df (pandas.DataFrame): The DataFrame to be uploaded.
             table_name (str): The name of the table to upload the DataFrame to.
         """
-        engine = self.init_db_engine()  # Initialize the database engine
-        df.to_sql(table_name, engine, if_exists='replace', index=False)  # Upload the DataFrame to the specified table, replacing it if it exists
+        # engine = self.init_db_engine(yaml_file)  # Initialize the database engine
+        # df.to_sql(table_name, engine, if_exists='replace', index=False)  # Upload the DataFrame to the specified table, replacing it if it exists
+
+        # try:
+        #     # Use the 'to_sql' method to upload the DataFrame to the specified table
+        #     df.to_sql(table_name, engine, if_exists='replace', index=False)
+        #     print(f"Data uploaded successfully to {table_name} table.")
+        #     return True
+        # except SQLAlchemyError as e:
+        #     print(f"Error uploading data to {table_name} table: {str(e)}")
+        #     return False
+
+        engine = self.init_db_engine(yaml_file)  # Initialize the database engine
+
+        try:
+            print("inside try")
+            # Use the 'to_sql' method to upload the DataFrame to the specified table
+            df.to_sql(table_name, engine, if_exists='replace', index=False)
+            print(f"Data uploaded successfully to {table_name} table.")
+            return True
+        except PendingRollbackError:
+            print("Encountered PendingRollbackError. Attempting to rollback the transaction.")
+            with engine.connect() as conn:
+                conn.execute("ROLLBACK")
+            df.to_sql(table_name, engine, if_exists='replace', index=False)
+            return True
+        except SQLAlchemyError as e:
+            print(f"Error uploading data to {table_name} table: {str(e)}")
+            return False

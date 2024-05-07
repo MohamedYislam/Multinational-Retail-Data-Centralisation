@@ -11,26 +11,6 @@ class DataCleaning:
     def __init__(self):
         pass  # The constructor method is empty, as no initialization is needed
 
-    def validate_phone(self, phone_number):
-        """
-        Helper function to validate the phone number format using regex.
-
-        Args:
-            phone_number (str): The phone number to be validated.
-
-        Returns:
-            bool: True if the phone number is valid, False otherwise.
-        """
-        pattern = r'^[^a-zA-Z]*\d{6,}[^a-zA-Z]*$'
-        
-        if re.match(pattern, phone_number):
-            return True
-        else:
-            return False
-
-        
-
-
     # Task 3 step 6
     def clean_user_data(self, df):  # Define a method to clean the user data DataFrame (Task 3, Step 6)
         """
