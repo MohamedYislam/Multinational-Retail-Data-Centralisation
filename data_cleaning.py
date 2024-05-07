@@ -78,3 +78,37 @@ class DataCleaning:
 
 
         return df  # Return the cleaned user data DataFrame
+    
+    # Task 4 Step 3
+    def clean_card_data(self, df):
+        """
+        Clean the card data DataFrame.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing user data to be cleaned.
+
+        Returns:
+            pandas.DataFrame: The cleaned user data DataFrame.
+        """
+        # removing columns with non-numeric card numbers,  and converting column type from object to integer
+        df['card_number'] = pd.to_numeric(df['card_number'], errors='coerce')
+        df.dropna(subset=['card_number'], inplace = True)
+        df['card_number'] = df['card_number'].astype(int)
+
+
+        # Convert expiry_date column to datetime format and removing rows with invalid dates
+        df['expiry_date'] = pd.to_datetime(df['expiry_date'], format='%m/%y', errors='coerce')
+        df.dropna(subset=['expiry_date'], inplace = True)
+
+        # Convert card_provider column from object type to stirng.
+
+        df['card_provider'] = df['card_provider'].astype('string')
+
+        # Convert date_payment_confirmed column to datetime format and removing rows with invalid dates
+        df['date_payment_confirmed'] = pd.to_datetime(df['date_payment_confirmed'], infer_datetime_format=True,errors='coerce')
+        df.dropna(subset=['date_payment_confirmed'], inplace = True)
+
+
+
+        return df
+

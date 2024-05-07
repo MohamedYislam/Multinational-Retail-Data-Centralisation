@@ -5,30 +5,29 @@ import pandas as pd
 import pycountry
 
 
-data_extractor = DataExtractor()
-db_connector = DatabaseConnector()
+# data_extractor = DataExtractor()
+# db_connector = DatabaseConnector()
+# yaml_file = 'db_creds.yaml'
+# table_names = db_connector.list_db_tables(yaml_file)
+# print(table_names, 'table names')
+# user_data = data_extractor.read_rds_table(db_connector, yaml_file)
+# print(user_data.info(), "<user_data.info()")
+# print(user_data.head(100), "<user_data.head(100)")
+
+# cleaned_df = data_cleaner.clean_user_data(user_data)
+# print(cleaned_df, "<cleaned_df")
+# print(cleaned_df.info(), "cleaned_df.info()")
+
+# # Upload the cleaned data to the 'dim_users' table
+# upload_success = db_connector.upload_to_db(cleaned_df, 'sales_db_creds.yaml', 'dim_users')
 data_cleaner = DataCleaning()
-yaml_file = 'db_creds.yaml'
-table_names = db_connector.list_db_tables(yaml_file)
-print(table_names, 'table names')
-user_data = data_extractor.read_rds_table(db_connector, yaml_file)
-print(user_data.info(), "<user_data.info()")
-print(user_data.head(100), "<user_data.head(100)")
+data_extractor_two = DataExtractor()
 
-cleaned_df = data_cleaner.clean_user_data(user_data)
-print(cleaned_df, "<cleaned_df")
-print(cleaned_df.info(), "cleaned_df.info()")
+card_data = data_extractor_two.retrieve_pdf_data("https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf")
 
-# Upload the cleaned data to the 'dim_users' table
-upload_success = db_connector.upload_to_db(cleaned_df, 'sales_db_creds.yaml', 'dim_users')
+cleaned_df = data_cleaner.clean_card_data(card_data)
 
-# 
-# Check if the upload was successful
-# if upload_success:
-#     print("User data uploaded successfully to the 'dim_users' table.")
-# else:
-#     print("Failed to upload user data to the 'dim_users' table.")
-
+print(cleaned_df.info(), "<cleaned_df.info()")
 """
 To do:
 

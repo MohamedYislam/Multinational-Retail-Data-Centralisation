@@ -1,4 +1,5 @@
 import pandas as pd 
+from tabula import read_pdf
 
 class DataExtractor:
     """
@@ -23,3 +24,26 @@ class DataExtractor:
         engine = db_connector.init_db_engine(yaml_file)  # Initialize the database engine using the provided DatabaseConnector instance
         df = pd.read_sql_table(table_name, engine)  # Read the specified table from the database into a DataFrame
         return df  # Return the DataFrame containing the extracted table data
+
+    # Task 4 step 2
+    def retrieve_pdf_data(self, pdf_link):
+        """
+        Retrieves data from a PDF file and returns it as a pandas DataFrame.
+
+        Args:
+            pdf_link (str): The URL or local path to the PDF file.
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the data extracted from the PDF file.
+        """
+
+        dfs = read_pdf(pdf_link, pages='all')
+        df = pd.concat(dfs, ignore_index=True)
+        
+        print(df, "<df")
+        print(df.info(), "<df.info()")
+
+
+        return df
+
+
