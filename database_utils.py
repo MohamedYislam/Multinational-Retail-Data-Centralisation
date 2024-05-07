@@ -60,17 +60,7 @@ class DatabaseConnector:
             df (pandas.DataFrame): The DataFrame to be uploaded.
             table_name (str): The name of the table to upload the DataFrame to.
         """
-        # engine = self.init_db_engine(yaml_file)  # Initialize the database engine
-        # df.to_sql(table_name, engine, if_exists='replace', index=False)  # Upload the DataFrame to the specified table, replacing it if it exists
 
-        # try:
-        #     # Use the 'to_sql' method to upload the DataFrame to the specified table
-        #     df.to_sql(table_name, engine, if_exists='replace', index=False)
-        #     print(f"Data uploaded successfully to {table_name} table.")
-        #     return True
-        # except SQLAlchemyError as e:
-        #     print(f"Error uploading data to {table_name} table: {str(e)}")
-        #     return False
 
         engine = self.init_db_engine(yaml_file)  # Initialize the database engine
 
