@@ -77,11 +77,12 @@ class DataExtractor:
         Returns:
             pandas.DataFrame: A DataFrame containing the store data, or None if the request fails.
         """
+        
         num_stores = self.list_number_of_stores(number_stores_endpoint, headers)
         print(num_stores, "<num_stores")
         if num_stores is not None:
             store_data = []
-            for store_number in range(1, 50):
+            for store_number in range(0, num_stores + 1):
                 url = store_details_endpoint.format(store_number=store_number)
                 print(url, "<url")
                 response = requests.get(url, headers = headers)
@@ -90,7 +91,9 @@ class DataExtractor:
                     store_data.append(response.json())
                 else:
                     print(f"Failed to retrieve data for store number {store_number}")
-            return pd.DataFrame(store_data)
+                
+            df = pd.DataFrame(store_data)
+            return df
         else:
             return None
 
