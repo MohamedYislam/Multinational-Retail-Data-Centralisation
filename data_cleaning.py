@@ -101,14 +101,63 @@ class DataCleaning:
         df.dropna(subset=['expiry_date'], inplace = True)
 
         # Convert card_provider column from object type to stirng.
-
         df['card_provider'] = df['card_provider'].astype('string')
 
         # Convert date_payment_confirmed column to datetime format and removing rows with invalid dates
         df['date_payment_confirmed'] = pd.to_datetime(df['date_payment_confirmed'], infer_datetime_format=True,errors='coerce')
         df.dropna(subset=['date_payment_confirmed'], inplace = True)
 
+        return df
+    
 
+    def clean_store_data(self, df):
+        """
+        Clean the store data DataFrame.
 
+        Args:
+            df (pandas.DataFrame): The DataFrame containing store data to be cleaned.
+
+        Returns:
+            pandas.DataFrame: The cleaned store data DataFrame.
+        """
+        # Converting address data type to string
+        df['address'] = df['address'].astype('string')
+ 
+        # Converting the longitude column type to numbers, and removing invalid entries
+        df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
+        df.dropna(subset=['longitude'], inplace = True)
+        df['longitude'] = df['longitude'].astype(int)
+
+        # Dropping the lat column as it contains many null values.
+        df.drop('lat', axis= 'columns', inplace = True)
+
+        # Converting locality column type to string
+        df['locality'] = df['locality'].astype('string')
+
+        # Converting store code column type to string
+        df['store_code'] = df['store_code'].astype('string')
+
+        # Converting the staff_number column type to numbers, and removing invalid entries
+        df['staff_numbers'] = pd.to_numeric(df['staff_numbers'], errors='coerce')
+        df.dropna(subset=['staff_numbers'], inplace = True)
+        df['staff_numbers'] = df['staff_numbers'].astype(int)
+
+        # Convert opening_date column to datetime format and removing rows with invalid dates
+        df['opening_date'] = pd.to_datetime(df['opening_date'], format='%Y-%m-%d', errors='coerce')
+        df = df.dropna(subset=['opening_date'])
+
+        # Converting store type column to string
+        df['store_type'] = df['store_type'].astype('string')
+
+        # converting latitude column to float64 type
+        df['latitude'] = df['latitude'].astype('float32')
+
+        # Converting country code column to string
+        df['country_code'] = df['country_code'].astype('string')
+
+        # Converting continent column type to string, and correcting continent miss spellings.
+        df['continent'] = df['continent'].astype('string')
+        df['continent'] = df['continent'].str.replace('eeEurope', 'Europe').str.replace('eeAmerica', 'America')
+        
         return df
 
