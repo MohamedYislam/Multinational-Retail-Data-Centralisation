@@ -178,26 +178,30 @@ class DataCleaning:
             'oz': 0.028349523125,  # 1 oz = 0.028349523125 kg
         }
 
-        if 'x' in weight_str:
-            print(weight_str, "<weight_str with x ")
+        if 'x' in weight_str: # Check if the weight string contains an 'x' character, indicating values such as ( "2 x 400g")
+            # Split the weight string on the 'x' character, first part is the multiplier, second part is unit string
             multiplier, unit_str = weight_str.split('x')
-            print(multiplier, "<multiplier")
-            print(unit_str, "<unit_str")
-            multiplier = int(multiplier.strip())
-            print(multiplier, "<<multiplier after change")
 
+            # Convert the multiplier string to an integer and remove any leading/trailing whitespace
+            multiplier = int(multiplier.strip())
+
+            # The regex pattern matches a numerical value (with or without a decimal point)
+            # followed by one or more whitespace characters and then one or more alphabetic characters
             value, unit = re.match(r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+)', unit_str.strip()).groups()
-            print(value, "<value")
-            print(unit, "<unit")
-            print(unit_mapping.get(unit), "<unit_mapping.get(unit)") # will convert unit to kg standard. for example  if unit is g we get 0.001 
-            unit_converted = unit_mapping.get(unit)
+
+            # Get the conversion factor for the unit from the 'unit_mapping' dictionary
+            unit_converted = unit_mapping.get(unit.lower())
+
+            # Convert the value string to a float
             value = float(value)
+
+            # Calculate the weight in kilograms by multiplying the value, multiplier, and conversion factor
             new_weight_str = value * multiplier * unit_converted
-            print(new_weight_str, "<new_weight_str after multipling")
+
+            # Return the calculated weight in kilograms
             return new_weight_str
         else:
-            # Use a regular expression to match the weight string
-            # The pattern matches a numerical value (with or without a decimal point)
+            # The regex pattern matches a numerical value (with or without a decimal point)
             # followed by one or more whitespace characters and then one or more alphabetic characters
             match = re.match(r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+)', weight_str)
 
@@ -213,7 +217,6 @@ class DataCleaning:
             # Calculate the weight in kilograms by multiplying the value with the conversion factor
             new_weight_str = value * unit_converted
 
-            # Return the calculated weight in kilograms
             return new_weight_str
 
  
@@ -228,12 +231,14 @@ class DataCleaning:
             pandas.DataFrame: The DataFrame with the 'weight' column converted to kilograms.
         """
   
-        # Checking rows for invalid entries
+        # Checking rows for invalid entries and removing them
         df['weight'] = df['weight'].apply(lambda x: x if re.match(r'^[0-9gGkKmMlLxX\. ]+$', str(x)) else None)
-        print(df.info(), "<df.info() here after changes ")
         df.dropna(subset=['weight'], inplace = True)
-        print(df.info(), "<df.info() after dropping")
-        df['weight'] = df['weight'].apply(self.parse_weight)
+
+        # Standardising weight format and converting them to kg
+        df['weight(kg)'] = df['weight'].apply(self.parse_weight)
+        df.drop('weight', axis='columns', inplace=True)
+
         return df
     
     
@@ -250,4 +255,5 @@ class DataCleaning:
 
         # Cleaning the weight column by removing in valid entries, converting it to float format, and standardising units to kg
         df['weight_(kg)'] = df['weight'].apply(self.convert_product_weights)
+        
         return df
