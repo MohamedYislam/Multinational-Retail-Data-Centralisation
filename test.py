@@ -29,7 +29,15 @@ cleaned_df = data_cleaner.clean_card_data(card_data)
 
 print(cleaned_df.info(), "<cleaned_df.info()")
 """
-To do:
+To do: MUST
+fix issue with uploading data to database.
+1. Must upload my cleaned user data to dim table - Task 3 Step 8
+2. Must upload my cleaned card data to dim table - Task 4 Step 4
+3. Must upload my cleaned store data to dim table - Task 5 step 5
 
 change the class so the yaml file name is only initilised once. 
 """
+
+
+# pdf.to_datetime('25/12')
+# pd.to_datetime(df['expiry_date'], infer_datetime_format=True,errors='coerce')

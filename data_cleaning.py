@@ -161,3 +161,93 @@ class DataCleaning:
         
         return df
 
+    
+
+    def parse_weight(self, weight_str):
+        """"
+        Parse a weight string and return the numerical value and unit.
+        If the weight string contains multiple units (e.g., "2 x 400g"), split it into separate entries.
+        """
+        # Define a dictionary to map the weight units to their conversion factors
+        unit_mapping = {
+            'kg': 1.0,
+            'g': 0.001,
+            'mg': 0.000001,
+            'ml': 0.001,  # Assuming 1 ml = 1 g for liquids
+            'l': 1.0,
+            'oz': 0.028349523125,  # 1 oz = 0.028349523125 kg
+        }
+
+        if 'x' in weight_str:
+            print(weight_str, "<weight_str with x ")
+            multiplier, unit_str = weight_str.split('x')
+            print(multiplier, "<multiplier")
+            print(unit_str, "<unit_str")
+            multiplier = int(multiplier.strip())
+            print(multiplier, "<<multiplier after change")
+
+            value, unit = re.match(r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+)', unit_str.strip()).groups()
+            print(value, "<value")
+            print(unit, "<unit")
+            print(unit_mapping.get(unit), "<unit_mapping.get(unit)") # will convert unit to kg standard. for example  if unit is g we get 0.001 
+            unit_converted = unit_mapping.get(unit)
+            value = float(value)
+            new_weight_str = value * multiplier * unit_converted
+            print(new_weight_str, "<new_weight_str after multipling")
+            return new_weight_str
+        else:
+            # Use a regular expression to match the weight string
+            # The pattern matches a numerical value (with or without a decimal point)
+            # followed by one or more whitespace characters and then one or more alphabetic characters
+            match = re.match(r'(\d+(?:\.\d+)?)\s*([a-zA-Z]+)', weight_str)
+
+            # Unpack the matched groups into 'value' and 'unit' variables
+            value, unit = match.groups()
+
+            # Convert the 'value' string to a float
+            value = float(value)
+
+            # Get the conversion factor for the 'unit' from the 'unit_mapping' dictionary
+            unit_converted = unit_mapping.get(unit.lower())
+
+            # Calculate the weight in kilograms by multiplying the value with the conversion factor
+            new_weight_str = value * unit_converted
+
+            # Return the calculated weight in kilograms
+            return new_weight_str
+
+ 
+    def convert_product_weights(self, df):
+        """
+        Convert the product weights to decimal values representing their weight in kilograms (kg).
+
+        Args:
+            products_df (pandas.DataFrame): The DataFrame containing the product data.
+
+        Returns:
+            pandas.DataFrame: The DataFrame with the 'weight' column converted to kilograms.
+        """
+  
+        # Checking rows for invalid entries
+        df['weight'] = df['weight'].apply(lambda x: x if re.match(r'^[0-9gGkKmMlLxX\. ]+$', str(x)) else None)
+        print(df.info(), "<df.info() here after changes ")
+        df.dropna(subset=['weight'], inplace = True)
+        print(df.info(), "<df.info() after dropping")
+        df['weight'] = df['weight'].apply(self.parse_weight)
+        return df
+    
+    
+    def clean_products_data(self, df):
+        """
+        Clean the store data DataFrame.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing store data to be cleaned.
+
+        Returns:
+            pandas.DataFrame: The cleaned store data DataFrame.
+        """
+
+        # Cleaning the weight column by removing in valid entries, converting it to float format, and standardising units to kg
+        df['weight_(kg)'] = df['weight'].apply(self.convert_product_weights)
+        return df
