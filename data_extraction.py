@@ -98,7 +98,7 @@ class DataExtractor:
         else:
             return None
 
-    def extract_from_s3(self, s3_address):
+    def extract_from_s3(self, s3_address, file_type = 'csv'):
         """
         Extract data from an S3 bucket and return a pandas DataFrame.
 
@@ -116,13 +116,25 @@ class DataExtractor:
         # Create an S3 client
         s3_client = boto3.client('s3')
 
-        # Download the CSV file from S3
+        # Read the file from S3
         try:
             response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
             data = response['Body'].read().decode('utf-8')
-            df = pd.read_csv(io.StringIO(data))
+
+            # Check the file type and loads the data into a DataFrame
+            if file_type.lower() == 'json':
+                # Read JSON data into a DataFrame
+                # orient='records' specifies that the JSON data is in a record-oriented format
+                df = pd.read_json(io.StringIO(data), orient='records')
+            elif file_type.lower() == 'csv':
+                # loads the CSV data into a DataFrame
+                df = pd.read_csv(io.StringIO(data))
+            else:
+                print(f"Invalid file type: {file_type}")
+                return None
+
             return df
+
         except Exception as e:
             print(f"Error occurred while extracting data from S3: {e}")
             return None
-
