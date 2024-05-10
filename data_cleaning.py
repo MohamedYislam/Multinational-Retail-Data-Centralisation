@@ -250,15 +250,13 @@ class DataCleaning:
 
         # Converting product_price column to float32 type 
         df['product_price(£)'] = df['product_price'].str.replace('£', '').astype('float32')
-        # df['product_price(£)'] = df['product_price'].astype('float32')
         df.drop('product_price', axis='columns', inplace=True)
 
         # Converting category column to string type
         df['category'] = df['category'].astype('string')
-        # df['weight_(kg)'] = df['weight'].apply(self.convert_product_weights)
         
         # Converting EAN column to integer type
-        df['EAN'] = df['EAN'].astype('int')
+        df['EAN'] = pd.to_numeric(df['EAN'])
 
         # Converting date_added column to datetime format and removing invalid entries
         df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
@@ -324,4 +322,36 @@ class DataCleaning:
         # Converting user_uuid to string data type
         df['user_uuid'] = df['user_uuid'].astype('string')
 
-        return df  # Return the cleaned user data DataFrame
+        return df  # Return the cleaned orders data DataFrame
+    
+    
+    def clean_date_events_data(self, df):
+        """
+        Clean the date events data DataFrame.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing date events data to be cleaned.
+
+        Returns:
+            pandas.DataFrame: The cleaned date events data DataFrame.
+        """
+        # Converting timestamp  column to datetime format and removing rows with invalid entries
+        df['timestamp'] = pd.to_datetime(df['timestamp'], format='%H:%M:%S', errors='coerce')
+        df = df.dropna(subset=['timestamp'])
+
+        # Converting month column to integer data type
+        df['month'] = pd.to_numeric(df['month'])
+
+        # Converting year column to integer data type
+        df['year'] = pd.to_numeric(df['year'])
+
+        # Converting day column to integer type
+        df['day'] = pd.to_numeric(df['day'])
+
+        # Converting time_period column to string data type
+        df['time_period'] = df['time_period'].astype('string')
+
+        # Converting date_uuid column to string data type
+        df['date_uuid'] = df['date_uuid'].astype('string')
+
+        return df

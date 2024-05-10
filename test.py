@@ -36,6 +36,7 @@ fix issue with uploading data to database.
 3. Must upload my cleaned store data to dim table - Task 5 step 5
 4. Must upload my cleaned products data to dim table - Task 6 step 4
 5. Must upload my cleaned orders data to dim table - Task 7 step 4
+6. Must upload my cleaned date events data to dim table - Task 8 (see s3_extraction_date_events)
 change the class so the yaml file name is only initilised once. 
 """
 
