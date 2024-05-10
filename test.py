@@ -31,10 +31,10 @@ print(cleaned_df.info(), "<cleaned_df.info()")
 """
 To do: MUST
 fix issue with uploading data to database.
-1. Must upload my cleaned user data to dim table - Task 3 Step 8
-2. Must upload my cleaned card data to dim table - Task 4 Step 4
+1. Must upload my cleaned user data to dim table - Task 3 step 8
+2. Must upload my cleaned card data to dim table - Task 4 step 4
 3. Must upload my cleaned store data to dim table - Task 5 step 5
-
+4. Must upload my cleaned products data to dim table - Task 6 step 4
 change the class so the yaml file name is only initilised once. 
 """
 
