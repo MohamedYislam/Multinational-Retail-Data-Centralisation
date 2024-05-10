@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
-
+import boto3
+import io
 from tabula import read_pdf
 
 class DataExtractor:
@@ -95,5 +96,33 @@ class DataExtractor:
             df = pd.DataFrame(store_data)
             return df
         else:
+            return None
+
+    def extract_from_s3(self, s3_address):
+        """
+        Extract data from an S3 bucket and return a pandas DataFrame.
+
+        Args:
+            s3_address (str): The S3 address of the CSV file (e.g., "s3://bucket-name/file.csv").
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the data extracted from the S3 bucket.
+        """
+        # Split the S3 address into bucket name and file key
+        bucket_name, file_key = s3_address.replace('s3://', '').split('/', 1)
+        print(bucket_name, "<bucket_name")
+        print(file_key, "<file_key")
+        
+        # Create an S3 client
+        s3_client = boto3.client('s3')
+
+        # Download the CSV file from S3
+        try:
+            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+            data = response['Body'].read().decode('utf-8')
+            df = pd.read_csv(io.StringIO(data))
+            return df
+        except Exception as e:
+            print(f"Error occurred while extracting data from S3: {e}")
             return None
 
