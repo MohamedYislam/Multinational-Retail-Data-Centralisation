@@ -34,7 +34,7 @@ class DataCleaning:
         df = df.dropna(subset=['last_name'])
 
 
-        # Convert date_of_birth column to datetime format and removing rows with invalid dates
+        # Converting date_of_birth column to datetime format and removing rows with invalid dates
         df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], infer_datetime_format=True,errors='coerce')
         df = df.dropna(subset=['date_of_birth'])
 
@@ -71,7 +71,7 @@ class DataCleaning:
         df = df.dropna(subset=['phone_number'])
 
 
-        # Convert join_date  column to datetime format and removing rows with invalid dates
+        # Converting join_date  column to datetime format and removing rows with invalid dates
         df['join_date'] = pd.to_datetime(df['join_date'], infer_datetime_format=True,errors='coerce')
         df = df.dropna(subset=['join_date'])
 
@@ -96,14 +96,14 @@ class DataCleaning:
         df['card_number'] = df['card_number'].astype(int)
 
 
-        # Convert expiry_date column to datetime format and removing rows with invalid dates
+        # Converting expiry_date column to datetime format and removing rows with invalid dates
         df['expiry_date'] = pd.to_datetime(df['expiry_date'], format='%m/%y', errors='coerce')
         df.dropna(subset=['expiry_date'], inplace = True)
 
-        # Convert card_provider column from object type to stirng.
+        # Converting card_provider column to string type
         df['card_provider'] = df['card_provider'].astype('string')
 
-        # Convert date_payment_confirmed column to datetime format and removing rows with invalid dates
+        # Converting date_payment_confirmed column to datetime format and removing rows with invalid dates
         df['date_payment_confirmed'] = pd.to_datetime(df['date_payment_confirmed'], infer_datetime_format=True,errors='coerce')
         df.dropna(subset=['date_payment_confirmed'], inplace = True)
 
@@ -142,7 +142,7 @@ class DataCleaning:
         df.dropna(subset=['staff_numbers'], inplace = True)
         df['staff_numbers'] = df['staff_numbers'].astype(int)
 
-        # Convert opening_date column to datetime format and removing rows with invalid dates
+        # Converting opening_date column to datetime format and removing rows with invalid dates
         df['opening_date'] = pd.to_datetime(df['opening_date'], format='%Y-%m-%d', errors='coerce')
         df = df.dropna(subset=['opening_date'])
 
@@ -182,7 +182,7 @@ class DataCleaning:
             # Split the weight string on the 'x' character, first part is the multiplier, second part is unit string
             multiplier, unit_str = weight_str.split('x')
 
-            # Convert the multiplier string to an integer and remove any leading/trailing whitespace
+            # Converting the multiplier string to an integer and remove any leading/trailing whitespace
             multiplier = int(multiplier.strip())
 
             # The regex pattern matches a numerical value (with or without a decimal point)
@@ -235,7 +235,7 @@ class DataCleaning:
         df['weight'] = df['weight'].apply(lambda x: x if re.match(r'^[0-9gGkKmMlLxX\. ]+$', str(x)) else None)
         df.dropna(subset=['weight'], inplace = True)
 
-        # Standardising weight format and converting them to kg
+        # Standardising weight format, converting to kg, and changing column name to weight(kg)
         df['weight(kg)'] = df['weight'].apply(self.parse_weight)
         df.drop('weight', axis='columns', inplace=True)
 
@@ -254,6 +254,35 @@ class DataCleaning:
         """
 
         # Cleaning the weight column by removing in valid entries, converting it to float format, and standardising units to kg
-        df['weight_(kg)'] = df['weight'].apply(self.convert_product_weights)
+        self.convert_product_weights(df)
+
+        
+        # Converting country code column to string
+        df['product_name'] = df['product_name'].astype('string')
+
+        # Converting product_price column to float32 type 
+        df['product_price(£)'] = df['product_price'].str.replace('£', '').astype('float32')
+        # df['product_price(£)'] = df['product_price'].astype('float32')
+        df.drop('product_price', axis='columns', inplace=True)
+
+        # Converting category column to string type
+        df['category'] = df['category'].astype('string')
+        # df['weight_(kg)'] = df['weight'].apply(self.convert_product_weights)
+        
+        # Converting EAN column to integer type
+        df['EAN'] = df['EAN'].astype('int')
+
+        # Converting date_added column to datetime format and removing invalid entries
+        df['date_added'] = pd.to_datetime(df['date_added'], infer_datetime_format=True, errors='coerce')
+        df.dropna(subset=['date_added'], inplace = True)
+
+        # Converting uuid column to string type
+        df['uuid'] = df['uuid'].astype('string')
+
+        # Converting 'removed' column to string type
+        df['removed'] = df['removed'].astype('string')
+
+        # Converting product_code column to string type
+        df['product_code'] = df['product_code'].astype('string')
         
         return df
