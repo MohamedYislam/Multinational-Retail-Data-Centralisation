@@ -23,5 +23,11 @@ print(df['product_code'], "<df[product_code]")
 print(df['product_code'].unique(), "<unique product_code")
 print(df.info(), "<df.info()")
 
+"""
+TO DO: 
 
-# print(cleaned_df['weight_(kg)'], "<cleaned_df[weight_kg]")
+Step 4:
+Once complete insert the data into the sales_data database using your upload_to_db method storing it in a table named dim_products.
+
+
+"""
