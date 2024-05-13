@@ -48,15 +48,16 @@ class DataCleaning:
         # Converting address column name to string data type
         df['address'] = df['address'].astype('string')
 
-        # Validating country name entry and converting column  to string data type
+        # Validating country name entry and converting column to string data type
         df['country'] = df['country'].apply(lambda x: x if pycountry.countries.lookup(x)
                                             or pycountry.countries.get(alpha_2=x.country)
                                             or pycountry.countries.get(alpha_3=x.country) else None)
         df['country'] = df['country'].astype('string')
 
-        # Validating country code and removing invalid entries
+        # Validating country code entires and converting column to string data type
         df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
         df = df.dropna(subset=['country_code'])
+        df['country_code'] = df['country'].astype('string')
         
         # Converting phone_number column to string type
         df['phone_number'] = df['phone_number'].astype('string')
@@ -308,10 +309,11 @@ class DataCleaning:
                                             or pycountry.countries.get(alpha_3=x.country) else None)
         df['country'] = df['country'].astype('string')
 
-        # Validating country code
+        # Validating country code and converting it to string type
         df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
         df = df.dropna(subset=['country_code'])
-        
+        df['country_code'] = df['country_code'].astype('string')
+
         # Converting phone_number column to string type
         df['phone_number'] = df['phone_number'].astype('string')
 
