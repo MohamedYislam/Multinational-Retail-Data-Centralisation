@@ -213,6 +213,34 @@ def modify_dim_products():
         
         print("dim_product table has been updated, a new column with weight category has been created")
 
+def modify_dim_date_times_table_column():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+
+        # Find the maximum text length of the 'time_period' column
+        max_length_time_period_query = text("SELECT MAX(LENGTH(time_period)) FROM dim_date_times")
+        max_length_time_period = connection.execute(max_length_time_period_query).scalar()
+                
+
+        modify_dim_date_times_column = text(f"""
+            ALTER TABLE dim_date_times
+                ALTER COLUMN day TYPE VARCHAR(2),
+                ALTER COLUMN month TYPE VARCHAR(2),
+                ALTER COLUMN year TYPE VARCHAR(4),
+                ALTER COLUMN time_period TYPE VARCHAR(10),
+                ALTER COLUMN date_uuid TYPE UUID USING date_uuid::uuid;
+        """)
+        
+        # Execute the statement using the connection
+        connection.execute(modify_dim_date_times_column)
+        print("dim_date_times column data type has been altered")
+
+
 modify_dim_user_table_column_data_type()
 modify_dim_store_details_table_column()
 modify_dim_products()
+modify_dim_date_times_table_column()
