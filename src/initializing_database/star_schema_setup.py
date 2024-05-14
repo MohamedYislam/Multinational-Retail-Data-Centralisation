@@ -60,6 +60,8 @@ class StarSchemaSetup:
 # StarSchemaSetup.modify_dim_user_table_column_data_type();
 # my_instance = StarSchemaSetup('sales_db_creds.yaml')
 # my_instance.modify_dim_user_table_column_data_type()
+
+# MILESTONE 3 TASK 2
 def modify_dim_user_table_column_data_type():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -113,17 +115,21 @@ def modify_dim_store_details_table_column():
                 ALTER COLUMN latitude TYPE FLOAT,
                 ALTER COLUMN country_code TYPE VARCHAR({max_length_country_code}),
                 ALTER COLUMN continent TYPE VARCHAR(255);
+        
+        
         """)
 
         # Updating row of business website
 
         update_dim_store_row = text(f"""
-        UPDATE dim_store_details
-            SET 
-                locality = NULL
-            WHERE
-                locality = 'N/A';
+            UPDATE dim_store_details
+                SET 
+                    locality = NULL
+                WHERE
+                    locality = 'N/A';
         """)
+
+        
 
         # Execute the statement using the connection
         connection.execute(modify_dim_store_table_column)
@@ -131,6 +137,82 @@ def modify_dim_store_details_table_column():
 
         print("dim_store_details column data type altered")
 
+# MILESTONE 3 TASK 4
+def modify_dim_products():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+
+    with engine.connect() as connection:
+        # Creating new weight class column
+        add_weight_class_column = text(f"""
+            ALTER TABLE dim_products
+                ADD COLUMN weight_class VARCHAR(20);
+            """)
+
+        # Filling in the weight_class detail
+        update_weight_class_details = text(f"""
+            UPDATE dim_products
+            SET weight_class = 
+                CASE
+                    WHEN "weight(kg)" < 2 THEN 'Light'
+                    WHEN "weight(kg)" >= 2 AND "weight(kg)" < 40 THEN 'Mid_Sized'
+                    WHEN "weight(kg)" >= 40 AND "weight(kg)" < 140 THEN 'Heavy'
+                    WHEN "weight(kg)" >= 140 THEN 'Truck_Required'
+                END;                           
+            """)
+        
+        # Finding the maximum length of the EAN column 
+        max_length_ean_query = text("SELECT MAX(LENGTH(\"EAN\")) FROM dim_products")
+        max_length_ean = connection.execute(max_length_ean_query).scalar()
+
+        # Find the maximum length of the product_code column
+        max_length_product_code_query = text("SELECT MAX(LENGTH(product_code)) FROM dim_products")
+        max_length_product_code = connection.execute(max_length_product_code_query).scalar()
+
+
+        # Renaming "removed" column to "still_available"
+        rename_removed_column = text(f"""
+            ALTER TABLE dim_products
+                RENAME COLUMN removed TO still_available;
+        """)
+
+
+        # Converting column from text to boolean data type
+        convert_removed_column_to_bool = text(f"""                 
+            UPDATE dim_products
+            SET 
+                still_available = 
+                CASE
+                    WHEN still_available = 'Still_available' THEN TRUE
+                    WHEN still_available = 'Removed' THEN FALSE
+                END;
+        """)
+
+        # Modifying column data type
+        modify_dim_products_table_column = text(f"""
+            ALTER TABLE dim_products
+                ALTER COLUMN "product_price(£)" TYPE FLOAT,
+                ALTER COLUMN "weight(kg)" TYPE FLOAT,
+                ALTER COLUMN "EAN" TYPE VARCHAR({max_length_ean}),
+                ALTER COLUMN product_code TYPE VARCHAR({max_length_product_code}),
+                ALTER COLUMN date_added TYPE DATE,
+                ALTER COLUMN uuid TYPE UUID USING uuid::UUID,
+                ALTER COLUMN still_available TYPE BOOLEAN USING still_available::boolean,
+                ALTER COLUMN weight_class TYPE VARCHAR(14);
+        """)
+
+
+
+        # Execute the statement using the connection
+        connection.execute(add_weight_class_column) # Creating new weight class column
+        connection.execute(update_weight_class_details) # Categorising weight class between #Light, mid_sized, Heavy and Truck_required
+        connection.execute(rename_removed_column) # renaming 'removed' column to 'still_available'      
+        connection.execute(convert_removed_column_to_bool) # Converting it to True if still available, otherwise False
+        connection.execute(modify_dim_products_table_column) # Changing data types of table column
+        
+        print("dim_product table has been updated, a new column with weight category has been created")
 
 modify_dim_user_table_column_data_type()
 modify_dim_store_details_table_column()
+modify_dim_products()
