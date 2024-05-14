@@ -257,7 +257,7 @@ class DataCleaning:
         df['category'] = df['category'].astype('string')
         
         # Converting EAN column to integer type
-        df['EAN'] = pd.to_numeric(df['EAN'])
+        df['EAN'] = df['EAN'].astype('string')
 
         # Converting date_added column to datetime format and removing invalid entries
         df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
