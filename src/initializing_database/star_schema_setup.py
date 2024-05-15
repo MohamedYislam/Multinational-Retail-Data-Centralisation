@@ -61,7 +61,45 @@ class StarSchemaSetup:
 # my_instance = StarSchemaSetup('sales_db_creds.yaml')
 # my_instance.modify_dim_user_table_column_data_type()
 
-# MILESTONE 3 TASK 2
+# Milestone 3 Task 1
+def modify_orders_table_column_data_type():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        # Find the maximum length of the card_number column
+        max_length_card_number_query = text("SELECT MAX(LENGTH(card_number)) FROM orders_table")
+        max_length_card_number = connection.execute(max_length_card_number_query).scalar()  # 19
+        print(max_length_card_number , "<<max_length_card_number")
+        
+        # Finding the maximum length of the store_code column
+        max_length_store_code_query = text("SELECT MAX(LENGTH(store_code)) FROM orders_table")
+        max_length_store_code = connection.execute(max_length_store_code_query).scalar() # 12    
+
+        # Find the maximum length of the product_code column
+        max_length_product_code_query = text("SELECT MAX(LENGTH(product_code)) FROM orders_table")
+        max_length_product_code = connection.execute(max_length_product_code_query).scalar() # 11
+
+    
+        
+        modify_dim_user_column = text(f"""
+        ALTER TABLE orders_table
+            ALTER COLUMN date_uuid TYPE UUID USING date_uuid::uuid,
+            ALTER COLUMN user_uuid TYPE UUID USING user_uuid::uuid,               
+            ALTER COLUMN card_number TYPE VARCHAR({max_length_card_number}),
+            ALTER COLUMN store_code TYPE VARCHAR({max_length_store_code}),
+            ALTER COLUMN product_code TYPE VARCHAR({max_length_product_code}),
+            ALTER COLUMN product_quantity TYPE SMALLINT;
+        """)
+        
+        # Execute the statement using the connection
+        connection.execute(modify_dim_user_column)
+        print("order table column data type altered")    
+
+
+# Milestone 3 Task 2
 def modify_dim_user_table_column_data_type():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -213,6 +251,7 @@ def modify_dim_products():
         
         print("dim_product table has been updated, a new column with weight category has been created")
 
+# Milestone 3 Task 6
 def modify_dim_date_times_table_column():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -239,31 +278,6 @@ def modify_dim_date_times_table_column():
         connection.execute(modify_dim_date_times_column)
         print("dim_date_times column data type has been altered")
 
-def modify_dim_date_times_table_column():
-    db_connector = DatabaseConnector()
-    yaml_file = 'sales_db_creds.yaml'
-    engine = db_connector.init_db_engine(yaml_file)
-    
-    # Obtain a connection from the engine
-    with engine.connect() as connection:
-
-        # Find the maximum text length of the 'time_period' column
-        max_length_time_period_query = text("SELECT MAX(LENGTH(time_period)) FROM dim_date_times")
-        max_length_time_period = connection.execute(max_length_time_period_query).scalar()
-                
-
-        modify_dim_date_times_column = text(f"""
-            ALTER TABLE dim_date_times
-                ALTER COLUMN day TYPE VARCHAR(2),
-                ALTER COLUMN month TYPE VARCHAR(2),
-                ALTER COLUMN year TYPE VARCHAR(4),
-                ALTER COLUMN time_period TYPE VARCHAR(10),
-                ALTER COLUMN date_uuid TYPE UUID USING date_uuid::uuid;
-        """)
-        
-        # Execute the statement using the connection
-        connection.execute(modify_dim_date_times_column)
-        print("dim_card_details column data types have been altered")
 
 def modify_dim_card_details_table_column():
     db_connector = DatabaseConnector()
@@ -272,11 +286,6 @@ def modify_dim_card_details_table_column():
     
     # Obtain a connection from the engine
     with engine.connect() as connection:
-
-        # Find the maximum text length of the 'time_period' column
-        max_length_time_period_query = text("SELECT MAX(LENGTH(time_period)) FROM dim_date_times")
-        max_length_time_period = connection.execute(max_length_time_period_query).scalar()
-                
 
         alter_dim_card_details_column = text(f"""
             ALTER TABLE dim_card_details
@@ -290,8 +299,13 @@ def modify_dim_card_details_table_column():
         connection.execute(alter_dim_card_details_column)
         print("dim_card_details column data types have been altered")
 
+def creating_primary_keys():
+    pass
+
+modify_dim_card_details_table_column()
 modify_dim_user_table_column_data_type()
 modify_dim_store_details_table_column()
 modify_dim_products()
 modify_dim_date_times_table_column()
 modify_dim_card_details_table_column()
+modify_orders_table_column_data_type()
