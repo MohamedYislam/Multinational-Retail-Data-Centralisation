@@ -23,6 +23,9 @@ def create_orders_table():
     print(cleaned_orders_data_df, "<cleaned_orders_data_df")
     print(cleaned_orders_data_df.info(), "<cleaned_orders_data_df.info()")
 
+    cleaned_orders_data_df = cleaned_orders_data_df.dropna()
+    print(cleaned_orders_data_df.info(), "<")
+
     # Data upload
     upload_success_orders = db_connector.upload_to_db(cleaned_orders_data_df, 'sales_db_creds.yaml', 'orders_table')
     if upload_success_orders:
