@@ -1,6 +1,8 @@
 import yaml  
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import SQLAlchemyError, PendingRollbackError
+import urllib.parse
+from sqlalchemy import URL
 
 class DatabaseConnector:
     """
@@ -34,9 +36,15 @@ class DatabaseConnector:
             sqlalchemy.engine.Engine: The initialized database engine.
         """
         creds = self.read_db_creds(yaml_file)  # Read the database credentials from the YAML file
-        engine = create_engine(f"postgresql://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")  # Create the database engine using the credentials
-
-        return engine  # Return the initialized database engine
+        url_object = URL.create(
+            "postgresql",
+            username=creds['RDS_USER'],
+            password=creds['RDS_PASSWORD'],
+            host=creds['RDS_HOST'],
+            database=creds['RDS_DATABASE'],
+        )
+        engine = create_engine(url_object)
+        return engine
 
     # Task 3 step 4
     def list_db_tables(self, yaml_file):
@@ -61,7 +69,6 @@ class DatabaseConnector:
             table_name (str): The name of the table to upload the DataFrame to.
         """
 
-
         engine = self.init_db_engine(yaml_file)  # Initialize the database engine
 
         try:
@@ -79,3 +86,4 @@ class DatabaseConnector:
         except SQLAlchemyError as e:
             print(f"Error uploading data to {table_name} table: {str(e)}")
             return False
+

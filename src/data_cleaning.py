@@ -48,15 +48,16 @@ class DataCleaning:
         # Converting address column name to string data type
         df['address'] = df['address'].astype('string')
 
-        # Validating country name entry and converting column  to string data type
+        # Validating country name entry and converting column to string data type
         df['country'] = df['country'].apply(lambda x: x if pycountry.countries.lookup(x)
                                             or pycountry.countries.get(alpha_2=x.country)
                                             or pycountry.countries.get(alpha_3=x.country) else None)
         df['country'] = df['country'].astype('string')
 
-        # Validating country code and removing invalid entries
+        # Validating country code entires and converting column to string data type
         df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
         df = df.dropna(subset=['country_code'])
+        df['country_code'] = df['country'].astype('string')
         
         # Converting phone_number column to string type
         df['phone_number'] = df['phone_number'].astype('string')
@@ -255,8 +256,8 @@ class DataCleaning:
         # Converting category column to string type
         df['category'] = df['category'].astype('string')
         
-        # Converting EAN column to integer type
-        df['EAN'] = pd.to_numeric(df['EAN'])
+        # Converting EAN column to string type
+        df['EAN'] = df['EAN'].astype('string')
 
         # Converting date_added column to datetime format and removing invalid entries
         df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
@@ -284,43 +285,44 @@ class DataCleaning:
         Returns:
             pandas.DataFrame: The cleaned orders data DataFrame.
         """
-        # Dropping the index, first_name and last_name columns
-        df.drop(['index', 'first_name', 'last_name'], axis = 'columns', inplace = True)
+        # # Dropping the index, first_name and last_name columns
+        # df.drop(['index', 'first_name', 'last_name'], axis = 'columns', inplace = True)
 
-        # Converting date_of_birth column to datetime format and removing invalid entries
-        df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], errors='coerce')
-        df.dropna(subset=['date_of_birth'], inplace = True)
+        # # Converting date_of_birth column to datetime format and removing invalid entries
+        # df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], errors='coerce')
+        # df.dropna(subset=['date_of_birth'], inplace = True)
 
-        # Converting company name column to string type
-        df['company'] = df['company'].astype('string')
+        # # Converting company name column to string type
+        # df['company'] = df['company'].astype('string')
 
-        # Removing invalid email address entries and converting column string type
-        df['email_address'] = df['email_address'].apply(lambda x: x if validate_email(x) else None)
-        df = df.dropna(subset=['email_address'])
-        df['email_address'] = df['email_address'].astype('string')
+        # # Removing invalid email address entries and converting column string type
+        # df['email_address'] = df['email_address'].apply(lambda x: x if validate_email(x) else None)
+        # df = df.dropna(subset=['email_address'])
+        # df['email_address'] = df['email_address'].astype('string')
 
-        # Converting address column name from object data type to string
-        df['address'] = df['address'].astype('string')
+        # # Converting address column name from object data type to string
+        # df['address'] = df['address'].astype('string')
 
-        # Validating country name entry and converting column  to string data type
-        df['country'] = df['country'].apply(lambda x: x if pycountry.countries.lookup(x)
-                                            or pycountry.countries.get(alpha_2=x.country)
-                                            or pycountry.countries.get(alpha_3=x.country) else None)
-        df['country'] = df['country'].astype('string')
+        # # Validating country name entry and converting column  to string data type
+        # df['country'] = df['country'].apply(lambda x: x if pycountry.countries.lookup(x)
+        #                                     or pycountry.countries.get(alpha_2=x.country)
+        #                                     or pycountry.countries.get(alpha_3=x.country) else None)
+        # df['country'] = df['country'].astype('string')
 
-        # Validating country code
-        df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
-        df = df.dropna(subset=['country_code'])
-        
-        # Converting phone_number column to string type
-        df['phone_number'] = df['phone_number'].astype('string')
+        # # Validating country code and converting it to string type
+        # df['country_code'] = df.apply(lambda x: x.country_code if pycountry.countries.get(alpha_2=x.country_code) else None, axis='columns')
+        # df = df.dropna(subset=['country_code'])
+        # df['country_code'] = df['country_code'].astype('string')
 
-        # Converting join_date  column to datetime format and removing rows with invalid dates
-        df['join_date'] = pd.to_datetime(df['join_date'], errors='coerce')
-        df = df.dropna(subset=['join_date'])
+        # # Converting phone_number column to string type
+        # df['phone_number'] = df['phone_number'].astype('string')
 
-        # Converting user_uuid to string data type
-        df['user_uuid'] = df['user_uuid'].astype('string')
+        # # Converting join_date  column to datetime format and removing rows with invalid dates
+        # df['join_date'] = pd.to_datetime(df['join_date'], errors='coerce')
+        # df = df.dropna(subset=['join_date'])
+
+        # # Converting user_uuid to string data type
+        # df['user_uuid'] = df['user_uuid'].astype('string')
 
         return df  # Return the cleaned orders data DataFrame
     
