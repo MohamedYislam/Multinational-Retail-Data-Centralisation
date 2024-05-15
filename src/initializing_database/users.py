@@ -14,7 +14,7 @@ def create_user_table():
     # Data extraction
     table_names = db_connector.list_db_tables(yaml_file)
     print(table_names, 'table names')
-    raw_user_data_df = data_extractor.read_rds_table(db_connector, yaml_file)
+    raw_user_data_df = data_extractor.read_rds_table(db_connector, yaml_file, 'legacy_users')
     print(raw_user_data_df, "<raw_user_data_df")
     print(raw_user_data_df.info(), "<raw_user_data_df.info()")
 

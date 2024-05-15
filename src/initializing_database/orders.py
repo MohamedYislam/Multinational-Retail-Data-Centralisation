@@ -1,7 +1,6 @@
 from ..data_extraction import DataExtractor
 from ..database_utils import DatabaseConnector
 from ..data_cleaning import DataCleaning
-import pandas as pd
 
 def create_orders_table():
     # Initialize components
@@ -15,7 +14,7 @@ def create_orders_table():
     # Data extraction
     table_names = db_connector.list_db_tables(yaml_file)
     print(table_names, 'table names')
-    raw_orders_data_df = data_extractor.read_rds_table(db_connector, yaml_file)
+    raw_orders_data_df = data_extractor.read_rds_table(db_connector, yaml_file, 'orders_table')
     print(raw_orders_data_df, "<raw_orders_data_df")
     print(raw_orders_data_df.info(), "<raw_orders_data_df.info()")
 
