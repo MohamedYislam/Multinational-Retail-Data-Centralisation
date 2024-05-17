@@ -304,8 +304,7 @@ class DataCleaning:
         df['product_code'] = df['product_code'].astype('string')
         
         return df  # Return the cleaned orders data DataFrame   
-    
-    
+
     def clean_date_events_data(self, df):
         """
         Clean the date events data DataFrame.
