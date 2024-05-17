@@ -1,67 +1,45 @@
 from ..database_utils import DatabaseConnector
 from sqlalchemy import text
 
-class StarSchemaSetup:
-    def __init__(self, yaml_file):
-        self.db_connector = DatabaseConnector()
-        self.engine = self.db_connector.init_db_engine(yaml_file)
-
-    def create_fact_sales_table(self):
-        create_table_sql = """
-        CREATE TABLE IF NOT EXISTS fact_sales (
-            sale_id INT PRIMARY KEY,
-            product_id INT,
-            store_id INT,
-            date_id INT,
-            quantity_sold INT,
-            total_sales FLOAT
-        );
-        """
-        self.engine.execute(create_table_sql)
-        print("Fact sales table created.")
-
-    def create_dimension_tables(self):
-        # Example SQL for creating a dimension table
-        create_dim_product_sql = """
-        CREATE TABLE IF NOT EXISTS dim_product (
-            product_id INT PRIMARY KEY,
-            product_name VARCHAR(255),
-            category VARCHAR(100)
-        );
-        """
-        self.engine.execute(create_dim_product_sql)
-        print("Dimension product table created.")
-
-    def modify_column_types(self):
-        alter_column_sql = "ALTER TABLE fact_sales ALTER COLUMN total_sales TYPE NUMERIC(10, 2);"
-        self.engine.execute(alter_column_sql)
-        print("Column types modified.")
+# Milestone 3 Task 1
+def modify_orders_table_column_data_type():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
     
-# def modify_dim_user_table_column_data_type():
-#     db_connector = DatabaseConnector()
-#     yaml_file = 'sales_db_creds.yaml'
-#     engine = db_connector.init_db_engine(yaml_file)
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        # Find the maximum length of the card_number column
+        max_length_card_number_query = text("SELECT MAX(LENGTH(card_number)) FROM orders_table")
+        max_length_card_number = connection.execute(max_length_card_number_query).scalar()  # 19
+        print(max_length_card_number , "<<max_length_card_number")
+        
+        # Finding the maximum length of the store_code column
+        max_length_store_code_query = text("SELECT MAX(LENGTH(store_code)) FROM orders_table")
+        max_length_store_code = connection.execute(max_length_store_code_query).scalar() # 12    
+
+        # Find the maximum length of the product_code column
+        max_length_product_code_query = text("SELECT MAX(LENGTH(product_code)) FROM orders_table")
+        max_length_product_code = connection.execute(max_length_product_code_query).scalar() # 11
+
     
-#     # Obtain a connection from the engine
-#     with engine.connect() as connection:
-#         modify_dim_user_column = """
-#         ALTER TABLE dim_users
-#             ALTER COLUMN first_name TYPE VARCHAR(255),
-#             ALTER COLUMN last_name TYPE VARCHAR(255),
-#             ALTER COLUMN date_of_birth TYPE DATE,
-#             ALTER COLUMN country_code TYPE VARCHAR(50),
-#             ALTER COLUMN user_uuid TYPE UUID USING user_uuid::uuid,
-#             ALTER COLUMN join_date TYPE DATE;
-#         """
-#         # Execute the statement using the connection
-#         connection.execute(text(modify_dim_user_column))
-#         print("dim user column data type altered")
+        
+        modify_dim_orders_column = text(f"""
+        ALTER TABLE orders_table
+            ALTER COLUMN date_uuid TYPE UUID USING date_uuid::uuid,
+            ALTER COLUMN user_uuid TYPE UUID USING user_uuid::uuid,               
+            ALTER COLUMN card_number TYPE VARCHAR({max_length_card_number}),
+            ALTER COLUMN store_code TYPE VARCHAR({max_length_store_code}),
+            ALTER COLUMN product_code TYPE VARCHAR({max_length_product_code}),
+            ALTER COLUMN product_quantity TYPE SMALLINT;
+        """)
+        
+        # Execute the statement using the connection
+        connection.execute(modify_dim_orders_column)
+        print("order table column data type altered")    
 
-# StarSchemaSetup.modify_dim_user_table_column_data_type();
-# my_instance = StarSchemaSetup('sales_db_creds.yaml')
-# my_instance.modify_dim_user_table_column_data_type()
 
-# MILESTONE 3 TASK 2
+# Milestone 3 Task 2
 def modify_dim_user_table_column_data_type():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -213,6 +191,7 @@ def modify_dim_products():
         
         print("dim_product table has been updated, a new column with weight category has been created")
 
+# Milestone 3 Task 6
 def modify_dim_date_times_table_column():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -239,31 +218,6 @@ def modify_dim_date_times_table_column():
         connection.execute(modify_dim_date_times_column)
         print("dim_date_times column data type has been altered")
 
-def modify_dim_date_times_table_column():
-    db_connector = DatabaseConnector()
-    yaml_file = 'sales_db_creds.yaml'
-    engine = db_connector.init_db_engine(yaml_file)
-    
-    # Obtain a connection from the engine
-    with engine.connect() as connection:
-
-        # Find the maximum text length of the 'time_period' column
-        max_length_time_period_query = text("SELECT MAX(LENGTH(time_period)) FROM dim_date_times")
-        max_length_time_period = connection.execute(max_length_time_period_query).scalar()
-                
-
-        modify_dim_date_times_column = text(f"""
-            ALTER TABLE dim_date_times
-                ALTER COLUMN day TYPE VARCHAR(2),
-                ALTER COLUMN month TYPE VARCHAR(2),
-                ALTER COLUMN year TYPE VARCHAR(4),
-                ALTER COLUMN time_period TYPE VARCHAR(10),
-                ALTER COLUMN date_uuid TYPE UUID USING date_uuid::uuid;
-        """)
-        
-        # Execute the statement using the connection
-        connection.execute(modify_dim_date_times_column)
-        print("dim_card_details column data types have been altered")
 
 def modify_dim_card_details_table_column():
     db_connector = DatabaseConnector()
@@ -273,16 +227,27 @@ def modify_dim_card_details_table_column():
     # Obtain a connection from the engine
     with engine.connect() as connection:
 
-        # Find the maximum text length of the 'time_period' column
-        max_length_time_period_query = text("SELECT MAX(LENGTH(time_period)) FROM dim_date_times")
-        max_length_time_period = connection.execute(max_length_time_period_query).scalar()
-                
+        # Finding the longest value in the column of each feature, so we can set var(x) to that number
+        # So we dont waste any storage space
+        
+        # Finding the maximum length of card_number 
+        max_length_card_number_query = text("SELECT MAX(LENGTH(card_number)) FROM dim_card_details")
+        max_length_card_number = connection.execute(max_length_card_number_query).scalar() # 22
+
+        # Finding the maximum length of
+        max_length_expiry_date_query = text("SELECT MAX(LENGTH(expiry_date)) FROM dim_card_details")
+        max_length_expiry_date = connection.execute(max_length_expiry_date_query).scalar() # 19 
+
+        # Finding maximum length of card_provider 
+        max_length_card_provider_query = text("SELECT MAX(LENGTH(card_provider)) FROM dim_card_details")
+        max_length_card_provider = connection.execute(max_length_card_provider_query).scalar() # 27 
+                 
 
         alter_dim_card_details_column = text(f"""
             ALTER TABLE dim_card_details
-                ALTER COLUMN card_number TYPE VARCHAR(19),
-                ALTER COLUMN expiry_date TYPE VARCHAR(19),
-                ALTER COLUMN card_provider TYPE VARCHAR(27),
+                ALTER COLUMN card_number TYPE VARCHAR({max_length_card_number}),
+                ALTER COLUMN expiry_date TYPE VARCHAR({max_length_expiry_date}),
+                ALTER COLUMN card_provider TYPE VARCHAR({max_length_card_provider}),
                 ALTER COLUMN date_payment_confirmed TYPE DATE;
         """)
         
@@ -290,8 +255,75 @@ def modify_dim_card_details_table_column():
         connection.execute(alter_dim_card_details_column)
         print("dim_card_details column data types have been altered")
 
-modify_dim_user_table_column_data_type()
-modify_dim_store_details_table_column()
-modify_dim_products()
-modify_dim_date_times_table_column()
-modify_dim_card_details_table_column()
+
+def creating_schema():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+
+        # To ensure referential integrity, we will delete rows from orders_table
+        # that have foreign key values not present in the corresponding dimension tables
+        cleaning_database = text(f"""
+            DELETE FROM orders_table
+            WHERE user_uuid NOT IN (SELECT user_uuid FROM dim_users)
+            OR store_code NOT IN (SELECT store_code FROM dim_store_details)
+            OR product_code NOT IN (SELECT product_code FROM dim_products)
+            OR date_uuid NOT IN (SELECT date_uuid FROM dim_date_times)
+            OR card_number NOT IN (SELECT card_number FROM dim_card_details);
+        """)
+
+        removing_reference_keys = text(f"""
+                                       
+            -- Dropping foreign keys if they exist
+            ALTER TABLE IF EXISTS orders_table DROP CONSTRAINT IF EXISTS fk_user_uuid;
+            ALTER TABLE IF EXISTS orders_table DROP CONSTRAINT IF EXISTS fk_store_code;
+            ALTER TABLE IF EXISTS orders_table DROP CONSTRAINT IF EXISTS fk_product_code;
+            ALTER TABLE IF EXISTS orders_table DROP CONSTRAINT IF EXISTS fk_date_uuid;
+            ALTER TABLE IF EXISTS orders_table DROP CONSTRAINT IF EXISTS fk_card_number; 
+
+            -- Dropping primary keys if they exist
+            ALTER TABLE IF EXISTS orders_table DROP CONSTRAINT IF EXISTS pk_orders_table;
+            ALTER TABLE IF EXISTS dim_users DROP CONSTRAINT IF EXISTS pk_dim_users;
+            ALTER TABLE IF EXISTS dim_store_details DROP CONSTRAINT IF EXISTS pk_dim_store_details;
+            ALTER TABLE IF EXISTS dim_products DROP CONSTRAINT IF EXISTS pk_dim_products;
+            ALTER TABLE IF EXISTS dim_date_times DROP CONSTRAINT IF EXISTS pk_dim_date_times;
+            ALTER TABLE IF EXISTS dim_card_details DROP CONSTRAINT IF EXISTS pk_dim_card_details;  
+
+        """)
+        adding_primary_and_foreign_keys = text(f"""             
+            --- Adding primary key to the orders_table
+            ALTER TABLE orders_table ADD CONSTRAINT pk_orders_table PRIMARY KEY (index);
+
+            -- Adding primary keys to the dimension tables
+            ALTER TABLE dim_users ADD CONSTRAINT pk_dim_users PRIMARY KEY (user_uuid);
+            ALTER TABLE dim_store_details ADD CONSTRAINT pk_dim_store_details PRIMARY KEY (store_code);
+            ALTER TABLE dim_products ADD CONSTRAINT pk_dim_products PRIMARY KEY (product_code);
+            ALTER TABLE dim_date_times ADD CONSTRAINT pk_dim_date_times PRIMARY KEY (date_uuid);
+            ALTER TABLE dim_card_details ADD CONSTRAINT pk_dim_card_details PRIMARY KEY (card_number);
+
+            -- adding foreign keys
+            ALTER TABLE orders_table ADD CONSTRAINT fk_user_uuid FOREIGN KEY (user_uuid) REFERENCES dim_users (user_uuid);
+            ALTER TABLE orders_table ADD CONSTRAINT fk_store_code FOREIGN KEY (store_code) REFERENCES dim_store_details (store_code);
+            ALTER TABLE orders_table ADD CONSTRAINT fk_product_code FOREIGN KEY (product_code) REFERENCES dim_products (product_code);                                           
+            ALTER TABLE orders_table ADD CONSTRAINT fk_date_uuid FOREIGN KEY (date_uuid) REFERENCES dim_date_times (date_uuid);        
+            ALTER TABLE orders_table ADD CONSTRAINT fk_card_number FOREIGN KEY (card_number) REFERENCES dim_card_details (card_number);
+       
+        """)
+
+        # Execute the statement using the connection
+        connection.execute(cleaning_database)
+        connection.execute(removing_reference_keys)
+        connection.execute(adding_primary_and_foreign_keys)
+        print("primary and foreign keys have have been added")
+
+def initializing_star_schema():
+    modify_orders_table_column_data_type()
+    modify_dim_user_table_column_data_type()
+    modify_dim_store_details_table_column()
+    modify_dim_products()
+    modify_dim_date_times_table_column()
+    modify_dim_card_details_table_column()
+    creating_schema()

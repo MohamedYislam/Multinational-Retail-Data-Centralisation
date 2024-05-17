@@ -82,11 +82,10 @@ class DataCleaning:
         Returns:
             pandas.DataFrame: The cleaned user data DataFrame.
         """
-        # removing columns with non-numeric card numbers,  and converting column type from object to integer
-        df['card_number'] = pd.to_numeric(df['card_number'], errors='coerce')
-        df.dropna(subset=['card_number'], inplace = True)
-        df['card_number'] = df['card_number'].astype(int)
 
+        # Converting card_number column to string type
+        df['card_number'] = df['card_number'].astype('string')
+ 
         # Converting expiry_date column to datetime format and removing rows with invalid dates
         df['expiry_date'] = pd.to_datetime(df['expiry_date'], format='%m/%y', errors='coerce')
         df.dropna(subset=['expiry_date'], inplace = True)
@@ -285,11 +284,9 @@ class DataCleaning:
         Returns:
             pandas.DataFrame: The cleaned orders data DataFrame.
         """
-        # Remove first, and last name column, remove 1, and remove level_0 index
-        # Convert date_uuid, user_uuid, card_number, store_code and product code to 1.
 
-        # # Dropping the first_name last_name, 'level_0' and '1' column
-        df.drop(['first_name', 'last_name', 'level_0', '1'], axis = 'columns', inplace = True)
+        # Dropping the first_name, last_name and '1' column
+        df.drop(['first_name', 'last_name', '1'], axis = 'columns', inplace = True)
 
         # Converting date_uuid column to string type
         df['date_uuid'] = df['date_uuid'].astype('string')
@@ -306,9 +303,8 @@ class DataCleaning:
         # Converting product_code column to string type
         df['product_code'] = df['product_code'].astype('string')
         
-        return df  # Return the cleaned orders data DataFrame
-    
-    
+        return df  # Return the cleaned orders data DataFrame   
+
     def clean_date_events_data(self, df):
         """
         Clean the date events data DataFrame.
