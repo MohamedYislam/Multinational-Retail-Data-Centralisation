@@ -28,6 +28,7 @@ def querying_data_total_no_stores():
         connection.execute(modify_dim_orders_column)
         print("order table column data type altered")  
 
+# Milestone 4 Task 2
 def stores_by_locality():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -54,6 +55,7 @@ def stores_by_locality():
         print("order table column data type altered")  
 
 
+# Milestone 4 Task 3
 def sales_by_month():
     db_connector = DatabaseConnector()
     yaml_file = 'sales_db_creds.yaml'
@@ -83,6 +85,35 @@ def sales_by_month():
         for row in result:
             print(f"Month: {row[0]}, Total Sales: {row[1]}")
 
+
+# Milestone 4 Task 4
+def online_offline_sales():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        online_offline_sales_query = text(f"""
+            SELECT 
+                COUNT(*) AS numbers_of_sales,
+                SUM(product_quantity) AS product_quantity_count,
+                CASE 
+                    WHEN store_code = 'WEB-1388012W' THEN 'Web'
+                    ELSE 'Offline'
+                END AS location
+            FROM 
+                orders_table
+            GROUP BY 
+                location;
+            """)
+            
+        # Execute the statement using the connection
+        result = connection.execute(online_offline_sales_query)
+        for row in result:
+            print(f"Numbers of Sales: {row[0]}, Product Quantity Count: {row[1]}, Location: {row[2]}")
+
+
 def querying_data():
     # SELECT country_code AS country,
     #     COUNT(*) AS total_no_stores
@@ -95,6 +126,7 @@ def querying_data():
     pass
 
 sales_by_month()
+online_offline_sales()
 """
 # The Operations team would like to know which countries we currently operate in 
 and which country now has the most stores. 
@@ -129,7 +161,7 @@ Find out which locations have the most stores currently. The query should return
 +-------------------+-----------------+
 
 Sales by month:
-
+Milestone 4 Task 3
 Query the database to find out which months have produced the most sales. The query should return the following information:
 
 +-------------+-------+
@@ -164,8 +196,62 @@ GROUP BY
 ORDER BY
     total_sales DESC;
 
+    
 
+
+Milestone 4 Task 4
+The company is looking to increase its online sales.
+
+They want to know how many sales are happening online vs offline.
+
+Calculate how many products were sold and the amount of sales made for online and offline purchases.
+
+You should get the following information:
+
++------------------+-------------------------+----------+
+| numbers_of_sales | product_quantity_count  | location |
++------------------+-------------------------+----------+
+|            26957 |                  107739 | Web      |
+|            93166 |                  374047 | Offline  |
+
+
+Strategy: 
+SELECT * FROM orders_table WHERE store_code = 'WEB-1388012W';
+
+Combine orders_table with dim_store_details
+
+
+WITH orders_online_offline_cte AS (
+    SELECT index,
+        product_quantity,
+        CASE 
+            WHEN store_code = 'WEB-1388012W' THEN 'Web'
+            ELSE 'Offline'
+        END AS location
+    FROM orders_table
+)
+SELECT COUNT(*) AS numbers_of_sales,
+    SUM(product_quantity) AS product_quantity_count,
+    location
+FROM 
+    orders_online_offline_cte
+GROUP BY
+    location;
+
+or method without CTE:
+
+SELECT 
+    COUNT(*) AS numbers_of_sales,
+    SUM(product_quantity) AS product_quantity_count,
+    CASE 
+        WHEN store_code = 'WEB-1388012W' THEN 'Web'
+        ELSE 'Offline'
+    END AS location
+FROM 
+    orders_table
+GROUP BY 
+    location;
 """
-querying_data()
-# modify_orders_table_column_data_type()
+
+
 
