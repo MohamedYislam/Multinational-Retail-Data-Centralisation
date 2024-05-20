@@ -114,7 +114,44 @@ def online_offline_sales():
             print(f"Numbers of Sales: {row[0]}, Product Quantity Count: {row[1]}, Location: {row[2]}")
 
 
+# Milestone 4 Task 5
+def percentage_of_sales_store_type():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        percentage_of_sales_store_type_query = text(f"""
+            WITH orders_store_products_cte AS (
+                SELECT 
+                    s.store_type,
+                    (o.product_quantity * p."product_price(£)")::numeric AS amount_paid
+                FROM
+                    orders_table o
+                JOIN
+                    dim_products p ON p.product_code = o.product_code
+                JOIN
+                    dim_store_details s ON s.store_code = o.store_code
+            )
+            SELECT 
+                store_type,
+                ROUND(SUM(amount_paid), 2) AS total_sales,
+                ROUND((SUM(amount_paid) / SUM(SUM(amount_paid)) OVER ()) * 100, 2) AS percentage_total
+            FROM 
+                orders_store_products_cte
+            GROUP BY 
+                store_type
+            ORDER BY 
+                percentage_total DESC;
+            """)
+            
+        # Execute the statement using the connection
+        result = connection.execute(percentage_of_sales_store_type_query)
+        for row in result:
+            print(f"store_type: {row[0]}, total_sales: {row[1]}, percentage_total(%): {row[2]}")
 def querying_data():
+
     # SELECT country_code AS country,
     #     COUNT(*) AS total_no_stores
     # FROM 
@@ -127,131 +164,4 @@ def querying_data():
 
 sales_by_month()
 online_offline_sales()
-"""
-# The Operations team would like to know which countries we currently operate in 
-and which country now has the most stores. 
-Perform a query on the database to get the information, it should return the following information:
-
-+----------+-----------------+
-| country  | total_no_stores |
-+----------+-----------------+
-| GB       |             265 |
-| DE       |             141 |
-| US       |              34 |
-+----------+-----------------+
-Note: DE is short for Deutschland(Germany)
-
-Milestone 4 Task 2:
-The business stakeholders would like to know which locations currently have the most stores.
-
-They would like to close some stores before opening more in other locations.
-
-Find out which locations have the most stores currently. The query should return the following:
-
-+-------------------+-----------------+
-|     locality      | total_no_stores |
-+-------------------+-----------------+
-| Chapletown        |              14 |
-| Belper            |              13 |
-| Bushley           |              12 |
-| Exeter            |              11 |
-| High Wycombe      |              10 |
-| Arbroath          |              10 |
-| Rutherglen        |              10 |
-+-------------------+-----------------+
-
-Sales by month:
-Milestone 4 Task 3
-Query the database to find out which months have produced the most sales. The query should return the following information:
-
-+-------------+-------+
-| total_sales | month |
-+-------------+-------+
-|   673295.68 |     8 |
-|   668041.45 |     1 |
-|   657335.84 |    10 |
-|   650321.43 |     5 |
-|   645741.70 |     7 |
-|   645463.00 |     3 |
-
-Strategy:
-Orders table contains information on date_uuid, product quantity, and product code.
-I will join the orders_table with the date_times table using date_uuid so I know the time each transaction was made.
-I will then also join it with the dim_products table using the product code , so I know the price of that product.
-The relevent information I need from the orders table: index, date_uuid, user_uuid, product_code, product quantity
-The relevent informaiton I need form dim_date times is : date_uuid, month
-The relevent information I need from dim_products is : product_code, Product_price
-
-SELECT 
-    dates.month,
-    ROUND(SUM((products."product_price(£)" * orders.product_quantity)::numeric), 2) AS total_sales
-FROM
-    orders_table orders
-JOIN
-    dim_date_times dates ON orders.date_uuid = dates.date_uuid
-JOIN
-    dim_products products ON orders.product_code = products.product_code
-GROUP BY
-    dates.month
-ORDER BY
-    total_sales DESC;
-
-    
-
-
-Milestone 4 Task 4
-The company is looking to increase its online sales.
-
-They want to know how many sales are happening online vs offline.
-
-Calculate how many products were sold and the amount of sales made for online and offline purchases.
-
-You should get the following information:
-
-+------------------+-------------------------+----------+
-| numbers_of_sales | product_quantity_count  | location |
-+------------------+-------------------------+----------+
-|            26957 |                  107739 | Web      |
-|            93166 |                  374047 | Offline  |
-
-
-Strategy: 
-SELECT * FROM orders_table WHERE store_code = 'WEB-1388012W';
-
-Combine orders_table with dim_store_details
-
-
-WITH orders_online_offline_cte AS (
-    SELECT index,
-        product_quantity,
-        CASE 
-            WHEN store_code = 'WEB-1388012W' THEN 'Web'
-            ELSE 'Offline'
-        END AS location
-    FROM orders_table
-)
-SELECT COUNT(*) AS numbers_of_sales,
-    SUM(product_quantity) AS product_quantity_count,
-    location
-FROM 
-    orders_online_offline_cte
-GROUP BY
-    location;
-
-or method without CTE:
-
-SELECT 
-    COUNT(*) AS numbers_of_sales,
-    SUM(product_quantity) AS product_quantity_count,
-    CASE 
-        WHEN store_code = 'WEB-1388012W' THEN 'Web'
-        ELSE 'Offline'
-    END AS location
-FROM 
-    orders_table
-GROUP BY 
-    location;
-"""
-
-
-
+percentage_of_sales_store_type()
