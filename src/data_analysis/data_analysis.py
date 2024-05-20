@@ -150,6 +150,74 @@ def percentage_of_sales_store_type():
         result = connection.execute(percentage_of_sales_store_type_query)
         for row in result:
             print(f"store_type: {row[0]}, total_sales: {row[1]}, percentage_total(%): {row[2]}")
+
+
+# Milestone 4 Task 6
+def highest_selling_month():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        highest_selling_month_query = text(f"""
+            WITH highest_selling_month_cte AS (
+                SELECT DISTINCT ON (d.month)
+                    SUM(ROUND((p."product_price(£)" * o.product_quantity)::numeric, 2)) AS total_sales,
+                    d.year,
+                    d.month
+                FROM
+                    orders_table o
+                JOIN
+                    dim_products p ON p.product_code = o.product_code
+                JOIN
+                    dim_date_times d ON d.date_uuid = o.date_uuid
+                GROUP BY
+                    d.year,
+                    d.month
+                ORDER BY
+                    d.month DESC,
+                    total_sales DESC
+            )
+            SELECT * 
+            FROM 
+                highest_selling_month_cte
+            ORDER BY
+                total_sales DESC;
+    """)
+            
+        # Execute the statement using the connection
+        result = connection.execute(highest_selling_month_query)
+        print("Highest Selling Month:")
+        for row in result:
+            print(f"total_sales: {row[0]}, year: {row[1]}, month: {row[2]}")
+
+
+# Milestone 4 Task 7
+def staff_head_count_by_country():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        staff_head_count_by_country_query = text(f"""
+            SELECT SUM(staff_numbers) AS total_staff_number, 
+                country_code 
+            FROM 
+                dim_store_details 
+            GROUP BY 
+                country_code 
+            ORDER BY 
+                total_staff_number DESC;
+            """)
+            
+        # Execute the statement using the connection
+        result = connection.execute(staff_head_count_by_country_query)
+        print("Staff head count by country:")
+        for row in result:
+            print(f"total_staff_number: {row[0]}, country_code: {row[1]}")
+
 def querying_data():
 
     # SELECT country_code AS country,
@@ -165,3 +233,6 @@ def querying_data():
 sales_by_month()
 online_offline_sales()
 percentage_of_sales_store_type()
+staff_head_count_by_country()
+highest_selling_month()
+
