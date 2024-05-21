@@ -18,9 +18,17 @@ def create_stores_table():
     raw_stores_data_df = data_extractor.retrieve_store_data(endpoint_stores_detail, endpoint_stores_number, header)
     print(raw_stores_data_df, "<raw_stores_data_df")
     print(raw_stores_data_df.info(), "<raw_stores_data_df.info()")
+
+    # Print the number of null values in the locality column before cleaning
+    print(f"Number of null values in 'locality' before cleaning: {raw_stores_data_df['locality'].isnull().sum()}")  
+
+    print(raw_stores_data_df['locality'].unique(), "<raw_store_data_df.unique")
+
     cleaned_stores_data_df = data_cleaner.clean_store_data(raw_stores_data_df)
     print(cleaned_stores_data_df, "<cleaned_stores_data_df")
     print(cleaned_stores_data_df.info(), "<cleaned_stores_data_df.info()")
+
+    print(f"Number of null values in 'locality' after cleaning: {cleaned_stores_data_df['locality'].isnull().sum()}")
 
     upload_success_stores = db_connector.upload_to_db(cleaned_stores_data_df, 'sales_db_creds.yaml', 'dim_store_details')
     if upload_success_stores:

@@ -84,6 +84,7 @@ def modify_dim_store_details_table_column():
         modify_dim_store_table_column = text(f"""
             ALTER TABLE dim_store_details
                 ALTER COLUMN longitude TYPE FLOAT,
+                ALTER COLUMN longitude TYPE FLOAT USING longitude::double precision,
                 ALTER COLUMN locality TYPE VARCHAR(255),
                 ALTER COLUMN store_code TYPE VARCHAR({max_length_store_code}),
                 ALTER COLUMN staff_numbers TYPE SMALLINT,
@@ -318,6 +319,7 @@ def creating_schema():
         connection.execute(removing_reference_keys)
         connection.execute(adding_primary_and_foreign_keys)
         print("primary and foreign keys have have been added")
+        
 
 def initializing_star_schema():
     modify_orders_table_column_data_type()
@@ -327,3 +329,5 @@ def initializing_star_schema():
     modify_dim_date_times_table_column()
     modify_dim_card_details_table_column()
     creating_schema()
+
+

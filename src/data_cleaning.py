@@ -86,9 +86,10 @@ class DataCleaning:
         # Converting card_number column to string type
         df['card_number'] = df['card_number'].astype('string')
  
-        # Converting expiry_date column to datetime format and removing rows with invalid dates
+        # Removing rows with invalid date format, and converting column to string type
         df['expiry_date'] = pd.to_datetime(df['expiry_date'], format='%m/%y', errors='coerce')
         df.dropna(subset=['expiry_date'], inplace = True)
+        df['expiry_date'] = df['expiry_date'].astype('string')
 
         # Converting card_provider column to string type
         df['card_provider'] = df['card_provider'].astype('string')
@@ -113,18 +114,17 @@ class DataCleaning:
         # Converting address data type to string
         df['address'] = df['address'].astype('string')
  
-        # Converting the longitude column type to numbers, and removing invalid entries
+        # # Converting the longitude column type to num
         df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
-        df.dropna(subset=['longitude'], inplace = True)
-        df['longitude'] = df['longitude'].astype(int)
 
         # Dropping the lat column as it contains many null values.
-        df.drop('lat', axis= 'columns', inplace = True)
+        df.drop('lat', axis='columns', inplace=True)
 
         # Converting locality column type to string
         df['locality'] = df['locality'].astype('string')
 
-        # Converting store code column type to string
+        # # Removing invalid store_code entries
+        df.dropna(subset=['store_code'])
         df['store_code'] = df['store_code'].astype('string')
 
         # Converting the staff_number column type to numbers, and removing invalid entries
@@ -132,23 +132,23 @@ class DataCleaning:
         df.dropna(subset=['staff_numbers'], inplace = True)
         df['staff_numbers'] = df['staff_numbers'].astype(int)
 
-        # Converting opening_date column to datetime format and removing rows with invalid dates
+        # # Converting opening_date column to datetime format and removing rows with invalid dates
         df['opening_date'] = pd.to_datetime(df['opening_date'], format='%Y-%m-%d', errors='coerce')
         df = df.dropna(subset=['opening_date'])
 
         # Converting store type column to string
         df['store_type'] = df['store_type'].astype('string')
 
-        # converting latitude column to float64 type
+        # converting latitude column to float32 type
         df['latitude'] = df['latitude'].astype('float32')
 
-        # Converting country code column to string
+        # # Converting country code column to string
         df['country_code'] = df['country_code'].astype('string')
 
-        # Converting continent column type to string, and correcting continent miss spellings.
+        # # Converting continent column type to string, and correcting continent miss spellings.
         df['continent'] = df['continent'].astype('string')
         df['continent'] = df['continent'].str.replace('eeEurope', 'Europe').str.replace('eeAmerica', 'America')
-        
+
         return df
 
 
@@ -315,9 +315,20 @@ class DataCleaning:
         Returns:
             pandas.DataFrame: The cleaned date events data DataFrame.
         """
-        # Converting timestamp  column to datetime format and removing rows with invalid entries
+        # Correcting timestamp formatting, as they all begin with 1900-01-01,
+        # So we will format it using the years, month, and day from the other columns an the Hours, minutes, seconds
+        # from the timestamp column 
+
+
+        # Removing invalid date entries 
         df['timestamp'] = pd.to_datetime(df['timestamp'], format='%H:%M:%S', errors='coerce')
         df = df.dropna(subset=['timestamp'])
+        
+        # Extracting time part from the timestamp
+        df['time'] = df['timestamp'].dt.time
+
+        # Replacing the timestamp column with the correct year, month, day, and time, formatted appropriately
+        df['timestamp'] = pd.to_datetime(df[['year', 'month', 'day']].astype(str).agg('-'.join, axis=1) + ' ' + df['time'].astype(str))
 
         # Converting month column to integer data type
         df['month'] = pd.to_numeric(df['month'])
