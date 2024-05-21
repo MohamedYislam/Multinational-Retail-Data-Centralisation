@@ -241,7 +241,9 @@ def best_selling_german_stores():
                 s.country_code = 'DE'
             GROUP BY
                 s.store_type,
-                s.country_code;
+                s.country_code
+            ORDER BY
+                total_sales ASC;
             """)
             
         # Execute the statement using the connection
@@ -249,18 +251,43 @@ def best_selling_german_stores():
         for row in result:
             print(f"total_sales: {row[0]}, store_type: {row[1]}, country_code: {row[2]}")
 
-
-def querying_data():
-
-    # SELECT country_code AS country,
-    #     COUNT(*) AS total_no_stores
-    # FROM 
-    #     dim_store_details
-    # GROUP BY 
-    #     country
-    # ORDER BY 
-    #     total_no_stores DESC;
-    pass
+# Milestone 4 Task 8
+def velocity_of_sales_by_year():
+    db_connector = DatabaseConnector()
+    yaml_file = 'sales_db_creds.yaml'
+    engine = db_connector.init_db_engine(yaml_file)
+    
+    # Obtain a connection from the engine
+    with engine.connect() as connection:
+        velocity_of_sales_by_year_query = text(f"""
+            WITH next_time_stamp_cte AS (
+                SELECT
+                    d.timestamp AS current_timestamp,
+                    d.year,
+                    (LEAD(d.timestamp) OVER (ORDER BY d.timestamp)) - d.timestamp AS time_until_next_transaction
+                FROM 
+                    dim_date_times d
+            )
+            SELECT 
+                year,
+                CONCAT(
+                    '"hours": ', EXTRACT(HOUR FROM AVG(time_until_next_transaction)), ', ',
+                    '"minutes": ', EXTRACT(MINUTE FROM AVG(time_until_next_transaction)), ', ',
+                    '"seconds": ', EXTRACT(SECOND FROM AVG(time_until_next_transaction)), ', ',
+                    '"milliseconds": ', EXTRACT(MILLISECOND FROM AVG(time_until_next_transaction))
+                ) AS actual_time_taken
+            FROM
+                next_time_stamp_cte
+            GROUP BY
+            year
+            ORDER BY
+                AVG(time_until_next_transaction) DESC;
+            """)
+            
+        # Execute the statement using the connection
+        result = connection.execute(velocity_of_sales_by_year_query)
+        for row in result:
+            print(f"year: {row[0]}, actual_time_taken: {row[1]}")            
 
 sales_by_month()
 online_offline_sales()
@@ -268,41 +295,4 @@ percentage_of_sales_store_type()
 staff_head_count_by_country()
 highest_selling_month()
 best_selling_german_stores()
-"""
-The sales team is looking to expand their territory in Germany. Determine which type of store is generating the most sales in Germany.
-
-The query will return:
-
-+--------------+-------------+--------------+
-| total_sales  | store_type  | country_code |
-+--------------+-------------+--------------+
-|   198373.57  | Outlet      | DE           |
-|   247634.20  | Mall Kiosk  | DE           |
-|   384625.03  | Super Store | DE           |
-|  1109909.59  | Local       | DE           |
-+--------------+-------------+--------------+
-
-Strtegy:
-For total sales data I need product quantity from orders_table, products price from dim_products and I need to join on
-product_code
-
-For store_type I will need to join on store_code with dim_store_details, using that table I can retrieve
-store_type and country_code.
-
-SELECT
-    SUM(ROUND((o.product_quantity * p."product_price(£)")::numeric,2)) AS total_sales,
-    s.store_type,
-    s.country_code
-FROM
-    orders_table o
-JOIN
-    dim_products p ON p.product_code = o.product_code
-JOIN
-    dim_store_details s ON s.store_code = o.store_code
-WHERE
-    s.country_code = 'DE'
-GROUP BY
-    s.store_type,
-    s.country_code;
-
-"""
+velocity_of_sales_by_year()

@@ -315,9 +315,20 @@ class DataCleaning:
         Returns:
             pandas.DataFrame: The cleaned date events data DataFrame.
         """
-        # Converting timestamp  column to datetime format and removing rows with invalid entries
+        # Correcting timestamp formatting, as they all begin with 1900-01-01,
+        # So we will format it using the years, month, and day from the other columns an the Hours, minutes, seconds
+        # from the timestamp column 
+
+
+        # Removing invalid date entries 
         df['timestamp'] = pd.to_datetime(df['timestamp'], format='%H:%M:%S', errors='coerce')
         df = df.dropna(subset=['timestamp'])
+        
+        # Extracting time part from the timestamp
+        df['time'] = df['timestamp'].dt.time
+
+        # Replacing the timestamp column with the correct year, month, day, and time, formatted appropriately
+        df['timestamp'] = pd.to_datetime(df[['year', 'month', 'day']].astype(str).agg('-'.join, axis=1) + ' ' + df['time'].astype(str))
 
         # Converting month column to integer data type
         df['month'] = pd.to_numeric(df['month'])
